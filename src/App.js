@@ -10,6 +10,7 @@ import React, { useEffect } from "react";
 import Payment from "./Payment";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
+import Orders from "./Orders";
 
 const promise = loadStripe(
   "pk_test_51MjcgdSDibdwkhmJ7WppVGx2QmOhi7AEOkstlgbaNl1Bi6b1ccGP11JE0SeBq0pVZZTZGcrb408R3R8J59nTtPF900VtCDv5RG"
@@ -44,6 +45,7 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
+          <Route path="/orders" element={[<Orders />]} />
           <Route path="/login" element={[<Login />]} />
           <Route path="/checkout" element={[<Header />, <Checkout />]} />
           <Route

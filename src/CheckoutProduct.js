@@ -16,6 +16,7 @@ function CheckoutProduct({ id, image, title, price, rating }) {
       <img className="checkoutProduct__image" src={image} />
       <div className="checkoutProduct__info">
         <p className="checkoutProduct__title">{title}</p>
+        <bold>$</bold>
         <strong> {price}</strong>
         <div className="checkoutProduct__rating">
           {Array(rating)

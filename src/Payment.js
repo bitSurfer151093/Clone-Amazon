@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./Payment.css";
 import { useStateValue } from "./StateProvider";
 import CheckoutProduct from "./CheckoutProduct";
@@ -7,7 +7,7 @@ import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
 import CurrencyFormat from "react-currency-format";
 import { getBasketTotal } from "./reducer";
 import axios from "./axios";
-import { useNavigate } from "react-router-dom";
+import { db } from "./firebase";
 
 function Payment() {
   const [{ basket, user }, dispatch] = useStateValue();
@@ -27,7 +27,7 @@ function Payment() {
     const getClientSecret = async () => {
       const response = await axios({
         method: "post",
-        url: `/payment/create?total=${getBasketTotal(basket) * 100}`,
+        url: `/payments/create?total=${getBasketTotal(basket) * 100}`,
       });
       setClientSecret(response.data.clientSecret);
     };
@@ -35,21 +35,36 @@ function Payment() {
     getClientSecret();
   }, [basket]);
 
+  console.log("THE SECRET KEY OF CLIENT IS: ", clientSecret);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setProcessing(true);
 
     const payload = await stripe
       .confirmCardPayment(clientSecret, {
-        payment_method: {
-          card: elements.getElement(CardElement),
-        },
+        payment_method: { card: elements.getElement(CardElement) },
       })
       .then(({ paymentIntent }) => {
         //Stripe calls payment confirmation as payment intent, don't confuse this.
+
+        db.collection("users")
+          .doc(user?.uid)
+          .collection("orders")
+          .doc(paymentIntent.id)
+          .set({
+            basket: basket,
+            amount: paymentIntent.amount,
+            created: paymentIntent.created,
+          });
+
         setSucceeded(true);
         setError(null);
         setProcessing(false);
+
+        dispatch({
+          type: "EMPTY_BASKET",
+        });
 
         history("/orders", { replace: true });
       });
@@ -58,7 +73,6 @@ function Payment() {
   const handleChange = (event) => {
     //Listen for the changes in the CardElement
     //and display any errors that customer encounters while typing details
-
     setDisabled(event.empty);
     setError(event.error ? event.error.message : "");
   };
