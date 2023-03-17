@@ -45,7 +45,7 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
-          <Route path="/orders" element={[<Orders />]} />
+          <Route path="/orders" element={[<Header />, <Orders />]} />
           <Route path="/login" element={[<Login />]} />
           <Route path="/checkout" element={[<Header />, <Checkout />]} />
           <Route
